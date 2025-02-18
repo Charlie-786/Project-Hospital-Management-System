@@ -12,25 +12,50 @@ const Dashboard = () => {
   const [appointments, setAppointments] = useState([]);
   const [totalAppointments, setTotalAppointments] = useState(0);
   const [totalDoctors, setTotalDoctors] = useState(0);
+  const [loading, setLoading] = useState(true); // Add loading state
 
   useEffect(() => {
-    const fetchAppointments = async () => {
+    const fetchData = async () => {
+      setLoading(true); // Start loading
       const token = cookie.get("admin-token");
+
       try {
-        const { data } = await axios.get(
+        // Fetch appointments
+        const appointmentsResponse = await axios.get(
           "http://localhost:8080/api/v1/user/admin/appointment/all",
-          { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }
+          {
+            withCredentials: true,
+            headers: { Authorization: `Bearer ${token}` },
+          }
         );
 
-        setAppointments(data);
-        setTotalAppointments(data.length);
-        const uniqueDoctors = new Set(data.map((appointment) => appointment.doctor.id));
-        setTotalDoctors(uniqueDoctors.size);
+        setAppointments(appointmentsResponse.data);
+        setTotalAppointments(appointmentsResponse.data.length);
+
+        // Fetch total doctor count
+        const doctorsCountResponse = await axios.get(
+          "http://localhost:8080/api/v1/user/admin/doctors/count",
+          {
+            withCredentials: true,
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        setTotalDoctors(doctorsCountResponse.data.count);
       } catch (error) {
+        console.error("Error fetching data:", error);
+        toast.error(
+          error.response?.data?.message ||
+            "Error fetching data. Please try again."
+        );
         setAppointments([]);
+        setTotalDoctors(0);
+      } finally {
+        setLoading(false); // Stop loading
       }
     };
-    fetchAppointments();
+
+    fetchData();
   }, []);
 
   const handleUpdateStatus = async (appointmentId, status) => {
@@ -39,9 +64,9 @@ const Dashboard = () => {
       const { data } = await axios.put(
         `http://localhost:8080/api/v1/user/admin/updateStatus/${appointmentId}?status=${status}`,
         {}, // Empty body since status is a query parameter
-        { 
+        {
           withCredentials: true,
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
       setAppointments((prevAppointments) =>
@@ -59,9 +84,13 @@ const Dashboard = () => {
 
   const { isAuthenticated, admin } = useContext(Context);
   // console.log(admin);
-  
+
   if (!isAuthenticated) {
     return <Navigate to={"/login"} />;
+  }
+
+  if (loading) {
+    return <div>Loading...</div>; // Simple loading indicator
   }
 
   return (

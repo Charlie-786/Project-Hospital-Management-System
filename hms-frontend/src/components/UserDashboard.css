@@ -106,6 +106,9 @@
   margin-bottom: 20px;
   color: #111;
 }
+.dashboard .banner:last-child h6{
+  font-size: 20px;
+}
 .dashboard .banner table {
   width: 100%;
   color: #111;
@@ -142,14 +145,14 @@
   color: #dc2626;
 }
 .dashboard .banner table thead {
-  text-align: justify;
-  padding: 12px 0;
+  text-align: center;
+  padding: 20px 0;
 }
 .dashboard .banner table thead th {
-  padding: 12px 0;
+  padding: 20px 0;
 }
 .dashboard .banner table tbody td {
-  padding: 12px 0;
+  padding: 20px 0;
 }
 @media (max-width: 1376px) {
   .dashboard .banner:first-child .firstBox .content div,

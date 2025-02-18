@@ -114,7 +114,7 @@ const AppointmentForm = () => {
       setAddress("");
     } catch (error) {
       toast.error(
-        "Error submitting appointment: " + error.response.data.message
+        "Error submitting appointment: " + error.response.data
       );
     }
   };

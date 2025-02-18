@@ -128,4 +128,11 @@ public class AdminController {
         userService.logout(email);
         return ResponseEntity.ok("Logged out successfully");
     }
+    @GetMapping("/doctors/count")
+    public ResponseEntity<Map<String, Long>> getDoctorCount() {
+        long count = doctorService.countDoctors();
+        Map<String, Long> response = new HashMap<>();
+        response.put("count", count);
+        return ResponseEntity.ok(response);
+    }
 }

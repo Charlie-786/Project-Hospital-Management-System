@@ -5,6 +5,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { Context } from "../main";
 import Cookies from "universal-cookie";
+// import "./Navbar.css";
 
 const Navbar = () => {
     const cookie = new Cookies();
@@ -69,6 +70,9 @@ const Navbar = () => {
             <Link to={"/appointment"} onClick={() => setShow(!show)}>
               Appointment
             </Link>
+            {/* <Link to={"/rescheduleAppointment"} onClick={() => setShow(!show)}>
+            RescheduleAppointment
+            </Link> */}
             <Link to={"/about"} onClick={() => setShow(!show)}>
               About Us
             </Link>

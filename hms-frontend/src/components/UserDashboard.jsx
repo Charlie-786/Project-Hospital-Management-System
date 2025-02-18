@@ -1,45 +1,83 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Context } from "../main";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { GoCheckCircleFill } from "react-icons/go";
 import { AiFillCloseCircle } from "react-icons/ai";
 import "../components/UserDashboard.css";
 import Cookies from "universal-cookie";
+
 const UserDashboard = () => {
   const cookie = new Cookies();
   const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]);
+  const [show, setShow] = useState(false);
+  const { isAuthenticated, user } = useContext(Context); // Get user from context
+  const [loading, setLoading] = useState(true);  // Add a loading state
+  const [totalDoctors, setTotalDoctors] = useState(0); // Add a state to store total doctors
 
   useEffect(() => {
     const fetchAppointments = async () => {
+      setLoading(true); // Start loading
+
       try {
         const token = cookie.get("token");
         const { data } = await axios.get(
-          `http://localhost:8080/api/v1/user/user/${user.id}/all`,
+          `http://localhost:8080/api/v1/appointment/user/${user.id}/all`,
           {
             withCredentials: true,
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-        // console.log("data", data);
-        
         setAppointments(data);
       } catch (error) {
         setAppointments([]);
+        console.error("Error fetching appointments:", error);
+      } finally {
+        setLoading(false); // Stop loading, regardless of success/failure
       }
     };
-    fetchAppointments();
-  }, []);
-  
+
+    const fetchTotalDoctors = async () => {
+      try {
+        const token = cookie.get("token");
+        const { data } = await axios.get(
+          `http://localhost:8080/api/v1/user/doctors/count`, // API endpoint to fetch total doctors
+          {
+            withCredentials: true,
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setTotalDoctors(data.count); // Assuming the API returns a count property
+      } catch (error) {
+        console.error("Error fetching total doctors:", error);
+      }
+    };
+
+    if (user && user.id) {  // Make sure user is available
+      fetchAppointments();
+      fetchTotalDoctors(); // Fetch total doctors
+    } else {
+      setLoading(false); // If user is not available, stop loading
+    }
+  }, [user]); // Add user to the dependency array
+
   const handlePrescribeMedicine = (appointmentId) => {
-    navigate(`/prescriptions/${appointmentId}`); // Navigate using useNavigate
+    navigate(`/prescriptions/${appointmentId}`);
   };
-  const { isAuthenticated, user } = useContext(Context);
+
+  const handleReschedule = (appointmentId) => {
+    navigate(`/rescheduleAppointment/${appointmentId}`);
+  };
+
   if (!isAuthenticated) {
     return <Navigate to={"/login"} />;
   }
-  console.log("user", user);
+
+  if (loading) {
+    return <div>Loading appointments...</div>; // Or any other loading indicator
+  }
+
   return (
     <>
       <section className="dashboard page">
@@ -66,13 +104,13 @@ const UserDashboard = () => {
           </div>
           <div className="thirdBox">
             <p>Registered Doctors</p>
-            <h3>10</h3>
+            <h3>{totalDoctors}</h3>
           </div>
         </div>
         <div className="banner">
           <h5>Appointments</h5>
           <table>
-            <thead>
+            <thead style={{textAlign : "center"}}>
               <tr>
                 <th>Patient</th>
                 <th>Date</th>
@@ -81,9 +119,10 @@ const UserDashboard = () => {
                 <th>Status</th>
                 <th>Visited</th>
                 <th>Prescription</th>
+                <th>Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody style={{textAlign : "center"}}>
               {appointments.length > 0 ? (
                 appointments.map((appointment) => (
                   <tr key={appointment.id}>
@@ -121,11 +160,18 @@ const UserDashboard = () => {
                         View Prescription
                       </button>
                     </td>
+                    <td>
+                      <button
+                        onClick={() => handleReschedule(appointment.id)}
+                      >
+                        Reschedule Appointment
+                      </button>
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="7">No Appointments Found!</td>
+                  <td colSpan="8">No Appointments Found!</td>
                 </tr>
               )}
             </tbody>

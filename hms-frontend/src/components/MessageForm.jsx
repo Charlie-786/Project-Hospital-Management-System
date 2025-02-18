@@ -47,7 +47,7 @@ const MessageForm = () => {
         });
     } catch (error) {
       // Error toast with backend message
-      toast.error(error.response.data.message || "There was an issue sending the message.");
+      toast.error(error.response.data || "There was an issue sending the message.");
     }
   };
   

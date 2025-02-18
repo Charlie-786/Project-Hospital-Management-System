@@ -41,6 +41,7 @@ public class PrescriptionService {
         Prescription prescription = new Prescription();
         prescription.setDoctor(appointment.getDoctor()); // Ensure that the Appointment entity has a doctor reference
         prescription.setPatient(appointment.getPatient()); // Ensure that the Appointment entity has a patient reference
+        prescription.setAppointment(appointment);
         prescription.setMedication(medication);
         prescription.setDosage(dosage);
         prescription.setInstructions(instructions);
@@ -48,5 +49,8 @@ public class PrescriptionService {
 
         // Save the prescription to the database
         return prescriptionRepository.save(prescription);
+    }
+    public List<Prescription> findPrescriptionsByAppointmentId(Long appointmentId) {
+        return prescriptionRepository.findByAppointmentId(appointmentId); // Assuming your repository has this method implemented
     }
 }

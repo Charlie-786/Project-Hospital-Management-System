@@ -1,7 +1,7 @@
 // src/components/ViewPrescriptions.jsx
 import React, { useContext, useEffect, useState } from "react";
 import { Context } from "../main";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { GoCheckCircleFill } from "react-icons/go";
 import { AiFillCloseCircle } from "react-icons/ai";
@@ -13,30 +13,42 @@ const ViewPrescriptions = () => {
   const navigate = useNavigate();
   const [prescriptions, setPrescriptions] = useState([]);
   const { isAuthenticated, user } = useContext(Context);
+  const { appointmentId } = useParams(); // Get appointmentId from URL params
 
   useEffect(() => {
     const fetchPrescriptions = async () => {
+      if (!appointmentId) {
+        // Handle the case where appointmentId is missing (e.g., redirect)
+        console.warn("Appointment ID is missing.  Cannot fetch prescriptions.");
+        setPrescriptions([]); // Or set to an error state
+        return;
+      }
+
       try {
         const token = cookie.get("token");
         const { data } = await axios.get(
-          `http://localhost:8080/api/v1/prescriptions/user/${user.id}`,
+          `http://localhost:8080/api/v1/prescriptions/${appointmentId}`, // Updated URL
           {
             withCredentials: true,
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-        console.log(data);
-        
+        console.log("Prescriptions fetched:", data);
         setPrescriptions(data);
       } catch (error) {
-        setPrescriptions([]);
+        console.error("Error fetching prescriptions:", error);
+        setPrescriptions([]); // Handle errors gracefully
       }
     };
+
     fetchPrescriptions();
-  }, [user.id]);
+  }, [appointmentId, user.id]); // Dependency array includes appointmentId
 
   if (!isAuthenticated) {
     return <navigate to={"/login"} />;
+  }
+  if (!appointmentId) {
+    return <div>Appointment ID not found.</div>; // Or a better message/redirect
   }
 //   console.log(prescriptions);
   

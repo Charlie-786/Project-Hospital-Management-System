@@ -17,13 +17,18 @@ const Dashboard = () => {
   const [appointments, setAppointments] = useState([]);
   const [totalAppointments, setTotalAppointments] = useState(0);
   const [totalDoctors, setTotalDoctors] = useState(0);
+  const [loading, setLoading] = useState(true); // Add loading state
 
-  // Fetch appointments on mount
+  // Fetch appointments and doctor count on mount
   useEffect(() => {
-    const fetchAppointments = async () => {
-      const token = cookie.get("doctor-token");
+    const fetchData = async () => {
+      setLoading(true); // Start loading
+
       try {
-        const response = await axios.get(
+        const token = cookie.get("doctor-token");
+
+        // Fetch appointments
+        const appointmentsResponse = await axios.get(
           `http://localhost:8080/api/v1/user/doctor/appointments/${doctor.id}`,
           {
             headers: {
@@ -31,23 +36,42 @@ const Dashboard = () => {
             },
           }
         );
-        const data = response.data;
-        setAppointments(data);
-        setTotalAppointments(data.length);
-        const uniqueDoctors = new Set(data.map((appointment) => appointment.doctor.id));
-        setTotalDoctors(uniqueDoctors.size);
+        const appointmentsData = appointmentsResponse.data;
+        setAppointments(appointmentsData);
+        setTotalAppointments(appointmentsData.length);
+
+        // Fetch total doctors count
+        const doctorsCountResponse = await axios.get(
+          `http://localhost:8080/api/v1/user/doctor/doctors/count`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setTotalDoctors(doctorsCountResponse.data.count);
       } catch (error) {
-        setAppointments([]);
+        console.error("Error fetching data:", error);
+        toast.error(
+          error.response?.data?.message || "Error fetching data. Please try again."
+        );
+        setAppointments([]); // Ensure appointments are reset in case of error
+        setTotalDoctors(0); // Ensure totalDoctors is reset in case of error
+      } finally {
+        setLoading(false); // Stop loading
       }
     };
-    fetchAppointments();
+
+    if (doctor && doctor.id) {
+      fetchData();
+    }
   }, [doctor]);
 
   // Handle status update
   const handleUpdateStatus = async (appointmentId, status) => {
     try {
       const token = cookie.get("doctor-token");
-      const response = await axios.put(
+      await axios.put(
         `http://localhost:8080/api/v1/user/doctor/updateStatus/${appointmentId}?status=${status}`,
         {},
         {
@@ -75,6 +99,10 @@ const Dashboard = () => {
   // Check if user is authenticated
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
+  }
+
+  if (loading) {
+    return <div>Loading...</div>; // Simple loading indicator
   }
 
   return (

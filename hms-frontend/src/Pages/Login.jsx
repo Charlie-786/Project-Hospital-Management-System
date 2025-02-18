@@ -28,20 +28,16 @@ const Login = () => {
           }
         )
         .then((res) => {
-          console.log(res);
-          
-            cookie.set("token", res.data);
-            cookie.set("email", email);
-            // cookie.set()
           toast.success("Login successful!");
+          cookie.set("token", res.data);
+          cookie.set("email", email);
           setIsAuthenticated(true);
           navigateTo("/");
           setEmail("");
           setPassword("");
-          // setConfirmPassword("");
         });
     } catch (error) {
-    //   toast.error(error.response.data.message);
+      toast.error(error.response.data);
     }
   };
 

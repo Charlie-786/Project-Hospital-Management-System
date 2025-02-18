@@ -14,6 +14,8 @@ import com.zeecare.hms2.repository.AppointmentRepository;
 import com.zeecare.hms2.repository.PrescriptionRepository;
 import com.zeecare.hms2.repository.UserRepository;
 
+import jakarta.persistence.EntityNotFoundException;
+
 @Service
 public class AppointmentService {
 
@@ -56,7 +58,7 @@ public class AppointmentService {
 
         // Update the status
         appointment.setStatus(status);
-        
+
         // Check if appointment is completed and create a prescription
         if ("COMPLETED".equalsIgnoreCase(status)) {
             Prescription prescription = new Prescription();
@@ -77,12 +79,12 @@ public class AppointmentService {
     public List<Appointment> getAllAppointments() {
         return appointmentRepository.findAll();
     }
-    
+
 //    public List<Appointment> getAllAppointmentsById(Long id) {
 //        return appointmentRepository.findById(id);
 //    }
 
-    
+
     public Appointment updateAppointment(Long appointmentId, AppointmentRequest request) {
         // Find the existing appointment by ID
         Appointment appointment = appointmentRepository.findById(appointmentId).orElseThrow(() -> new RuntimeException("Appointment not found"));
@@ -107,12 +109,40 @@ public class AppointmentService {
     public int countAppointments() {
         return (int) appointmentRepository.count();
     }
-    
+
     public List<Appointment> getAppointmentsByUserId(Long id) {
         return appointmentRepository.findByPatient_Id(id);  // Assuming the repository has this method implemented
     }
 
     public List<Appointment> getAppointmentsByDoctorId(Long id) {
         return appointmentRepository.findByDoctor_Id(id);
+    }
+
+    // New Method: GET appointment by ID
+    public Appointment getAppointmentById(Long appointmentId) {
+        return appointmentRepository.findById(appointmentId)
+                .orElse(null); // Return null if not found (controller handles 404)
+    }
+
+    // New Method: PUT to reschedule appointment
+    public Appointment rescheduleAppointment(Long appointmentId, AppointmentRequest request) {
+         Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new EntityNotFoundException("Appointment not found with id: " + appointmentId));
+
+        // Find doctor
+        User doctor = userRepository.findByFirstNameAndLastName(request.getDoctorFirstName(), request.getDoctorLastName())
+                .orElseThrow(() -> new RuntimeException("Doctor not found"));
+
+        // Update the appointment fields based on the request
+        appointment.setAppointmentDate(request.getAppointmentDate());
+        appointment.setDepartment(request.getDepartment());
+        appointment.setDoctor(doctor); // Assuming you want to update the doctor
+        appointment.setHasVisited(request.getHasVisited());
+        appointment.setAddress(request.getAddress());
+
+        // Set the status to "PENDING"
+        appointment.setStatus("PENDING");  // Added this line
+
+        return appointmentRepository.save(appointment);
     }
 }

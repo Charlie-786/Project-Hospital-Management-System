@@ -151,4 +151,11 @@ public class DoctorController {
 
         return ResponseEntity.ok(createdPrescription);
     }
+    @GetMapping("/doctors/count")
+    public ResponseEntity<Map<String, Long>> getDoctorCount() {
+        long count = doctorService.countDoctors();
+        Map<String, Long> response = new HashMap<>();
+        response.put("count", count);
+        return ResponseEntity.ok(response);
+    }
 }

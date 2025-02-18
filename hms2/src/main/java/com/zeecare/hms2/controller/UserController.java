@@ -1,6 +1,8 @@
 package com.zeecare.hms2.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,7 @@ import com.zeecare.hms2.entity.Prescription;
 import com.zeecare.hms2.entity.User;
 import com.zeecare.hms2.repository.DoctorRepository;
 import com.zeecare.hms2.service.AppointmentService;
+import com.zeecare.hms2.service.DoctorService;
 import com.zeecare.hms2.service.PrescriptionService;
 import com.zeecare.hms2.service.UserService;
 import com.zeecare.hms2.util.JwtUtil;
@@ -35,6 +38,9 @@ public class UserController {
     
     @Autowired
     private PrescriptionService prescriptionService;
+    
+    @Autowired
+    private DoctorService doctorService;
     
     @Autowired
     private JwtUtil jwtUtil;
@@ -81,5 +87,17 @@ public class UserController {
     public ResponseEntity<List<Appointment>> getAppointmentsByUserId(@PathVariable Long id) {
         List<Appointment> appointments = appointmentService.getAppointmentsByUserId(id);
         return ResponseEntity.ok(appointments);
+    }
+    @GetMapping("/doctors/count")
+    public ResponseEntity<Map<String, Long>> getDoctorCount() {
+        long count = doctorService.countDoctors();
+        Map<String, Long> response = new HashMap<>();
+        response.put("count", count);
+        return ResponseEntity.ok(response);
+    }
+    @GetMapping("/prescription/{appointmentId}")
+    public ResponseEntity<List<Prescription>> getPrescriptionsByAppointmentId(@PathVariable Long appointmentId) {
+        List<Prescription> prescriptions = prescriptionService.findPrescriptionsByAppointmentId(appointmentId);
+        return ResponseEntity.ok(prescriptions);
     }
 }

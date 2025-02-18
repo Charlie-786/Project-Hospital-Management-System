@@ -78,6 +78,7 @@ h6 {
   padding-top: 120px;
   padding-bottom: 120px;
   position: relative;
+  overflow: hidden;
 }
 .hero .banner {
   flex: 1;
@@ -459,6 +460,8 @@ nav .navLinks {
 nav .navLinks .links {
   display: flex;
   gap: 25px;
+  /* margin-left: -130px; */
+  
 }
 nav .navLinks .links a {
   text-decoration: none;
@@ -592,8 +595,8 @@ footer .logo-img{
   color: #fff;
   border: none;
   border-radius: 8px;
-  padding: 10px 20px;
-  font-size: 18px;
+  padding: 10px 15px;
+  font-size: 15px;
   cursor: pointer;
   transition: background 0.3s;
   margin-right: 2%;
@@ -602,3 +605,5 @@ footer .logo-img{
 .prescription-form button:hover {
   background: linear-gradient(140deg, #271776ca, #9083d5);
 }
+
+

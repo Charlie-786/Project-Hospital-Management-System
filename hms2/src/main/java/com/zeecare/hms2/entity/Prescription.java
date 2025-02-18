@@ -15,6 +15,10 @@ public class Prescription {
     private Long id;
 
     @ManyToOne
+    @JoinColumn(name = "appointment_id")
+    private Appointment appointment;
+    
+    @ManyToOne
     @JoinColumn(name = "doctor_id", nullable = false)
     private User doctor;
 
